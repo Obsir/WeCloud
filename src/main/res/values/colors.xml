@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- -->
+    <color name="black_textview">#575757</color>
+    <color name="group_list_black_textview">#353535</color>
+    <color name="group_list_gray">#999999</color>
+    <color name="group_list_liner">#e4e4e4</color>
+    <color name="main_title_backgroud">#F2F2F2</color>
+    <color name="main_regist">#ffffff</color>
+    <color name="button_backgroud">#0195ff</color>
+    <color name="de_title_bg">#0195ff</color>
+    <color name="seal_bg">#f0f0f6</color>
+
+    <color name="rc_text_color_secondary_inverse">@android:color/white</color>
+
+    <!--actionbar-->
+    <color name="de_actionbar_bg">#0195ff</color>
+    <!---->
+    <color name="de_action_color">#3498DB</color>
+    <color name="de_action_white">@android:color/white</color>
+    <color name="de_transparent">#00000000</color>
+
+    <color name="de_draft_color">#cb120f</color>
+    <color name="main_theme_color">#0195ff</color>
+
+    <color name="press">#e8e8e8</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="text_line_color">#dfdfdd</color>
+    <color name="text_black_color">#333333</color>
+    <color name="text_tips_color">#666666</color>
+    <color name="mine_head_color">#cccccc</color>
+    <color name="text_color">#353535</color>
+
+    <!--SWITCH-->
+    <color name="ksw_md_ripple_normal">#1E000000</color>
+    <color name="ksw_md_solid_shadow">#33000000</color>
+    <color name="ksw_md_solid_normal">#ECECEC</color>
+    <color name="ksw_md_solid_disable">#FFFFFF</color>
+    <color name="ksw_md_solid_checked_disable">#aaaaaa</color>
+
+    <color name="ac_filter_string_color">#0099ff</color>
+
+    <color name="rc_text_color_primary">#353535</color>
+    <color name="rc_text_color_secondary">#999999</color>
+    <color name="rc_text_color_tertiary">#d7d7d7</color>
+    <color name="rc_text_color_primary_inverse">@android:color/white</color>
+    <color name="rc_normal_bg">#EBEBEB</color>
+    <color name="rc_message_user_name">#828282</color>
+
+    <color name="rc_notification_bg">#D3D3D3</color>
+    <color name="rc_conversation_top_bg">#f2faff</color>
+    <color name="rc_plugins_bg">#F8F8F8</color>
+    <color name="rc_input_bg">#F4F4F4</color>
+    <color name="rc_text_voice">#737373</color>
+
+    <color name="rc_notice_warning">#F0ffd0c4</color>
+    <color name="rc_notice_normal">#F0fffbd4</color>
+    <color name="rc_notice_text">#999999</color>
+    <color name="rc_location_text">#7F000000</color>
+
+    <color name="rc_web_progress_bar">#9fcdfd</color>
+
+    <color name="rc_draft_color">#cb120f</color>
+    <color name="rc_mentioned_color">#cc3333</color>
+    <color name="rc_voice_color">#0195ff</color>
+    <color name="rc_voice_color_left">#4385bf</color>
+    <color name="rc_voice_color_right">#a2a2a2</color>
+
+    <color name="rc_voice_cancel"> #CC933432</color>
+
+    <color name="rc_input_gap_color">#dbdbdd</color>
+    <color name="rc_conversation_list_divider_color">#dfdfdd</color>
+
+    <color name="rc_ad_file_list_no_select_file_text_state">#9fcdfd</color>
+    <color name="rc_ad_file_list_select_file_text_state">#ffffff</color>
+
+    <color name="rc_read_receipt_status">#96c4ec</color>
+
+    <color name="cornflower_blue">#6274e2</color>
+    <color name="cornflower_blue_dark">#303F9F</color>
+    <color name="cornflower_blue_darkest">#2d3a93</color>
+    <color name="gray">#ebebeb</color>
+    <color name="gray_light">#e8e8e8</color>
+    <color name="gray_transparent">#a6efefef</color>
+    <color name="gray_dark">#858585</color>
+    <color name="gray_dark_transparent">#ae858585</color>
+    <color name="gray_darkest">#ae282828</color>
+    <color name="black">#000000</color>
+    <color name="black_10">#19000000</color>
+    <color name="ivory">#f8efe6</color>
+    <color name="ivory_dark">#f7e8d9</color>
+    <color name="green">#38be55</color>
+    <color name="green_dark">#2da346</color>
+    <color name="red">#e94f4f</color>
+    <color name="brown">#4e342e</color>
+</resources>
