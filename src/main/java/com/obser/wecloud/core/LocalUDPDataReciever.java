@@ -126,7 +126,7 @@ public class LocalUDPDataReciever
 			
 			try
 			{
-				ClientCoreSDK.getInstance().getChatTransDataEvent().onMessageReceive(packet.getAddress().getHostAddress() + ":" + new String(packet.getData(), 0, packet.getLength()));
+				ClientCoreSDK.getInstance().getChatTransDataEvent().onMessageReceive(new String(packet.getData(), 0, packet.getLength()));
 			}
 			catch (Exception e)
 			{

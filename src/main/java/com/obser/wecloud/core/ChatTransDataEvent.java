@@ -17,5 +17,4 @@ public interface ChatTransDataEvent {
     //自定义
     void setMessagesAdapter(MessagesListAdapter<Message> messagesAdapter);
     void setDialogsListAdapter(DialogsListAdapter<Dialog> dialogsListAdapter);
-    ArrayList<Message> getMessages();
 }

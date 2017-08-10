@@ -27,7 +27,7 @@ public class NetUtils {
 
     public static final String LOGIN_URL = "http://192.168.1.103:8083/login";
     public static final String REGISTER_URL = "http://192.168.1.103:8083/regist";
-
+    public static final String FIND_ALL_USER = "http://192.168.1.103:8083/findAllUser";
     //保证OkHttpClient是唯一的
     private static OkHttpClient okHttpClient;
 

@@ -5,23 +5,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.obser.wecloud.R;
 import com.obser.wecloud.bean.Dialog;
 import com.obser.wecloud.bean.Message;
+import com.obser.wecloud.bean.MessagesListProvider;
+import com.obser.wecloud.bean.ProtocolMessage;
 import com.obser.wecloud.bean.User;
-import com.obser.wecloud.core.ChatTransDataEvent;
 import com.obser.wecloud.core.ClientCoreSDK;
 import com.obser.wecloud.core.LocalUDPDataSender;
-import com.obser.wecloud.fixtures.Avatars;
-import com.obser.wecloud.fixtures.MessagesFixtures;
-import com.obser.wecloud.utils.UDPUtils;
+import com.obser.wecloud.protocol.Protocol;
 import com.stfalcon.chatkit.commons.ImageLoader;
+import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
@@ -55,10 +54,10 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     private MessageInput input;
 
     /* 自定义 start */
-    private User mUser;
+    private static User mUser;
     private static Dialog mDialog;
     private static String mTo_user_ip;
-    private ArrayList<Message> messages;
+    private static DialogsListAdapter<Dialog> mDialogsListAdapter;
     /* 自定义 end */
     public static void open(Context context, String to_user_ip){
         context.startActivity(new Intent(context, MessageActivity.class));
@@ -66,9 +65,11 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     }
 
 
-    public static void open(Context context, Dialog dialog) {
+    public static void open(Context context, Dialog dialog, User user, DialogsListAdapter<Dialog> dialogsListAdapter) {
         context.startActivity(new Intent(context, MessageActivity.class));
+        mUser = user;
         mDialog = dialog;
+        mDialogsListAdapter = dialogsListAdapter;
     }
 
     @Override
@@ -77,6 +78,7 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
         setContentView(R.layout.activity_styled_messages);
         initData();
         initBar();
+        imageLoader = mDialogsListAdapter.getImageLoader();
         messagesList = (MessagesList) findViewById(R.id.messagesList);
         initAdapter();
 
@@ -86,8 +88,8 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     }
 
     private void initData() {
-         mUser = new User("0", UDPUtils.getIPAddress(this), Avatars.getAvatar(), true);
-        messages = ClientCoreSDK.getInstance().getChatTransDataEvent().getMessages();
+//         mUser = new User("0", UDPUtils.getIPAddress(this), "nnn", UDPUtils.getIPAddress(this), true);
+//        messages = ClientCoreSDK.getInstance().getChatTransDataEvent().getMessages();
     }
 
     private void initBar() {
@@ -119,13 +121,16 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     public boolean onSubmit(CharSequence input) {
 //        messagesAdapter.addToStart(
 //                MessagesFixtures.getTextMessage(input.toString()), true);
-        final Message message = new Message(mUser.getId(), mUser, input.toString());
+        final Message message = new Message(System.currentTimeMillis() + "", mUser, input.toString());
+        mDialogsListAdapter.updateDialogWithMessage(mDialog.getId(), message);
         if(mDialog != null)
-           new LocalUDPDataSender.SendCommonDataAsync(this, input.toString(), mDialog.getId()){
+           new LocalUDPDataSender.SendCommonDataAsync(this, Protocol.packMessage(new ProtocolMessage(mUser.getName(), mUser.getIp(), input.toString(), "text", mUser.getAvatar())), mDialog.getId().split(":")[1]){
                @Override
                protected void onPostExecute(Integer code) {
+//                   Log.d("ConversationFragment", mDialog.getId() + ":" + input.toString());
                    messagesAdapter.addToStart(message, true);
-                   ClientCoreSDK.getInstance().getChatTransDataEvent().getMessages().add(message);
+                   List<Message> list = MessagesListProvider.getMessagesById(mDialog.getId());
+                   list.add(message);
                }
            }.execute();
         else
@@ -167,11 +172,10 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     protected void onStart() {
         super.onStart();
 //        messagesAdapter.addToStart(MessagesFixtures.getTextMessage(), true);
-        if(!messages.isEmpty()){
-            for(Message message : messages){
-                messagesAdapter.addToStart(message, true);
-            }
-        }
+        List<Message> messages = MessagesListProvider.getMessagesById(mDialog.getId());
+        Log.d("loadMessages", messages.toString());
+        if(!messages.isEmpty())
+            messagesAdapter.addToEnd(messages, false);
     }
 
 //    @Override
@@ -209,7 +213,7 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     @Override
     public void onLoadMore(int page, int totalItemsCount) {
         if (totalItemsCount < TOTAL_MESSAGES_COUNT) {
-            loadMessages();
+//            loadMessages();
         }
     }
 

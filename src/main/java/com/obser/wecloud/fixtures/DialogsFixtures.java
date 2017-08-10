@@ -58,6 +58,7 @@ public final class DialogsFixtures extends FixturesData {
                 getRandomId(),
                 getRandomName(),
                 getRandomAvatar(),
+                "",
                 getRandomBoolean());
     }
 

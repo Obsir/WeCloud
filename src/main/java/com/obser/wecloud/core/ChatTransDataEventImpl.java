@@ -1,14 +1,19 @@
 package com.obser.wecloud.core;
 
+import android.util.Log;
+
 import com.obser.wecloud.bean.Dialog;
 import com.obser.wecloud.bean.Message;
+import com.obser.wecloud.bean.MessagesListProvider;
+import com.obser.wecloud.bean.ProtocolMessage;
 import com.obser.wecloud.bean.User;
-import com.obser.wecloud.fixtures.Avatars;
+import com.obser.wecloud.protocol.Protocol;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Obser on 2017/8/7.
@@ -18,16 +23,10 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
 
     private  DialogsListAdapter<Dialog> dialogsListAdapter;
     private MessagesListAdapter<Message> messagesAdapter;
-    private ArrayList<Message> messages = new ArrayList<>();
-
-
     public void setMessagesAdapter(MessagesListAdapter<Message> messagesAdapter){
         this.messagesAdapter = messagesAdapter;
     }
 
-    public ArrayList<Message> getMessages() {
-        return messages;
-    }
 
     @Override
 
@@ -37,12 +36,18 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
 
     @Override
     public void onMessageReceive(String message) {
-        String[] split = message.split(":");
-        String avatarUrl = Avatars.getAvatar();
-        Message msg = new Message(split[0], new User("1", split[0], avatarUrl, true), split[1]);
+        ProtocolMessage protocolMessage = Protocol.unPackMessage(message);
+        User user = new User("1", protocolMessage.getFromUserName(), protocolMessage.getFromUserPicture(), protocolMessage.getFromUserIp(), true);
+        Log.d("Conversation", message);
+        Message msg = new Message(String.valueOf(System.currentTimeMillis()), user, protocolMessage.getContent());
 //        msg.setImage(new Message.Image(avatarUrl));
-        messages.add(msg);
-        onNewMessage(split[0], msg);
+
+        String dialogId = protocolMessage.getFromUserName() + ":" + protocolMessage.getFromUserIp();
+
+        List<Message> list = MessagesListProvider.getMessagesById(dialogId);
+        list.add(msg);
+
+        onNewMessage(dialogId, msg);
         if(messagesAdapter != null)
             messagesAdapter.addToStart(msg, true);
     }
@@ -53,9 +58,10 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
     }
 
 
-    private void onNewMessage(String dialogId, IMessage message) {
+    public void onNewMessage(String dialogId, IMessage message) {
         if (!dialogsListAdapter.updateDialogWithMessage(dialogId, message)) {
             //Dialog with this ID doesn't exist, so you can create new Dialog or reload all dialogs list
+            Log.d("ConversationDialogId", dialogId);
             String name = message.getUser().getName();
             String photo = message.getUser().getAvatar();
             ArrayList<User> users = new ArrayList<>();

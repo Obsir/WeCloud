@@ -2,6 +2,7 @@ package com.obser.wecloud.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -164,7 +165,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                Log.d(TAG, response.body().string() + "");
+//                Log.d(TAG, response.body().string() + "");
                 final String str = response.body().string();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -176,6 +177,26 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         }
                     }
                 });
+//                if(response.body().string().equals("SUCCESS")){
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    goToMain();
+//                                }
+//                            });
+//                        }
+//                    });
+//                } else {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            login_failure();
+//                        }
+//                    });
+//                }
             }
         });
     }
@@ -219,7 +240,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //        editor.apply();
         LoadDialog.dismiss(mContext);
         NToast.shortToast(mContext, R.string.login_success);
-        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.putExtra("account", accountString);
+        startActivity(intent);
         finish();
     }
 }

@@ -1,8 +1,11 @@
 package com.obser.wecloud.bean;
 
+import android.support.annotation.NonNull;
+
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.MessageContentType;
 
+import java.util.Comparator;
 import java.util.Date;
 
 /*
@@ -10,7 +13,9 @@ import java.util.Date;
  */
 public class Message implements IMessage,
         MessageContentType.Image, /*this is for default image messages implementation*/
-        MessageContentType /*and this one is for custom content type (in this case - voice message)*/ {
+        MessageContentType, /*and this one is for custom content type (in this case - voice message)*/
+        Comparable<Message>
+        {
 
     private String id;
     private String text;
@@ -79,7 +84,16 @@ public class Message implements IMessage,
         this.voice = voice;
     }
 
-    public static class Image {
+
+    @Override
+    public int compareTo(@NonNull Message o) {
+        if(o.getCreatedAt().before(getCreatedAt()))
+            return -1;
+        else
+            return 1;
+    }
+
+            public static class Image {
 
         private String url;
 
@@ -105,5 +119,10 @@ public class Message implements IMessage,
         public int getDuration() {
             return duration;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "{msg_id:" + id + ", user:" + user.toString() + ", text:" + text + "}";
     }
 }

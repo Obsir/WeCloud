@@ -17,13 +17,13 @@ public class User implements Serializable {
     //@GeneratedValue(strategy = GenerationType.AUTO)
     private String username; //用户名
     private String userpwd; //用户密码
-    private int userpower; //用户真实姓名
+    private int userpower; //用户权限
     private String realname; //用户真实姓名
     private String ip; //用户当前ip
     private String port; //用户当前接收信息端口
     private int state; //用户当前上线状态
     private String picture; //用户头像照片
-    private int team;
+    private int team;   //用户所在组
 
     public User() {
     }

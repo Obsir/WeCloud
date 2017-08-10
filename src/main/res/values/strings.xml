@@ -353,7 +353,7 @@
     <string name="date_header_today">Today</string>
     <string name="date_header_yesterday">Yesterday</string>
 
-    <string name="hint_enter_a_message">Type a message…</string>
+    <string name="hint_enter_a_message">请输入内容…</string>
     <string name="on_log_click_message">Your custom long click handler</string>
     <string name="action_delete">Delete</string>
     <string name="action_copy">Copy</string>
