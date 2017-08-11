@@ -1,4 +1,4 @@
-package com.obser.wecloud.service;
+package com.obser.wecloud.view;
 
 import android.content.Context;
 import android.graphics.Canvas;

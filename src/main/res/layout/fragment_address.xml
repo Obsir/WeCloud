@@ -50,7 +50,7 @@
             android:textSize="30.0dip"
             android:visibility="invisible" />
 
-        <com.obser.wecloud.service.SideBar
+        <com.obser.wecloud.view.SideBar
             android:id="@+id/sidrbar"
             android:layout_width="20.0dip"
             android:layout_height="fill_parent"

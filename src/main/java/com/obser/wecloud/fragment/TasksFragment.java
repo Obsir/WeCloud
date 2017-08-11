@@ -14,8 +14,7 @@ import android.widget.TextView;
 
 import com.obser.wecloud.R;
 import com.obser.wecloud.activity.MessageActivity;
-import com.obser.wecloud.service.SideBar;
-import com.obser.wecloud.utils.UDPUtils;
+import com.obser.wecloud.view.SideBar;
 import com.obser.wecloud.view.SelectableRoundedImageView;
 
 

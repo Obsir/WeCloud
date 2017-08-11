@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.obser.wecloud.R;
-import com.obser.wecloud.User;
+import com.obser.wecloud.bean.User;
 import com.obser.wecloud.utils.NToast;
 import com.obser.wecloud.utils.NetUtils;
 import com.obser.wecloud.view.ClearWriteEditText;

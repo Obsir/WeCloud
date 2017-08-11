@@ -5,16 +5,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.obser.wecloud.R;
+import com.obser.wecloud.app.WeCloudApplication;
 import com.obser.wecloud.bean.Dialog;
 import com.obser.wecloud.bean.Message;
 import com.obser.wecloud.bean.MessagesListProvider;
 import com.obser.wecloud.bean.ProtocolMessage;
+import com.obser.wecloud.bean.ChatUser;
 import com.obser.wecloud.bean.User;
 import com.obser.wecloud.core.ClientCoreSDK;
 import com.obser.wecloud.core.LocalUDPDataSender;
@@ -27,7 +28,6 @@ import com.stfalcon.chatkit.messages.MessagesListAdapter;
 import com.stfalcon.chatkit.utils.DateFormatter;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -65,9 +65,8 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     }
 
 
-    public static void open(Context context, Dialog dialog, User user, DialogsListAdapter<Dialog> dialogsListAdapter) {
+    public static void open(Context context, Dialog dialog, DialogsListAdapter<Dialog> dialogsListAdapter) {
         context.startActivity(new Intent(context, MessageActivity.class));
-        mUser = user;
         mDialog = dialog;
         mDialogsListAdapter = dialogsListAdapter;
     }
@@ -88,7 +87,9 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     }
 
     private void initData() {
-//         mUser = new User("0", UDPUtils.getIPAddress(this), "nnn", UDPUtils.getIPAddress(this), true);
+        WeCloudApplication application = (WeCloudApplication) getApplication();
+        mUser = application.getUser();
+//         mChatUser = new ChatUser("0", UDPUtils.getIPAddress(this), "nnn", UDPUtils.getIPAddress(this), true);
 //        messages = ClientCoreSDK.getInstance().getChatTransDataEvent().getMessages();
     }
 
@@ -123,17 +124,22 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
 //                MessagesFixtures.getTextMessage(input.toString()), true);
         final Message message = new Message(System.currentTimeMillis() + "", mUser, input.toString());
         mDialogsListAdapter.updateDialogWithMessage(mDialog.getId(), message);
-        if(mDialog != null)
-           new LocalUDPDataSender.SendCommonDataAsync(this, Protocol.packMessage(new ProtocolMessage(mUser.getName(), mUser.getIp(), input.toString(), "text", mUser.getAvatar())), mDialog.getId().split(":")[1]){
-               @Override
-               protected void onPostExecute(Integer code) {
+        if(mDialog != null){
+            boolean mode = mDialog.getMode();
+            messagesAdapter.addToStart(message, true);
+            List<Message> list = MessagesListProvider.getMessagesById(mDialog.getId());
+            list.add(message);
+            for(User user : mDialog.getUsers()){
+                if(user.getIp().equals(mUser.getIp()))
+                    continue;
+                new LocalUDPDataSender.SendCommonDataAsync(this, Protocol.packMessage(new ProtocolMessage(mUser, mDialog.getId(), input.toString(), "text", mode)), user.getIp()){
+                    @Override
+                    protected void onPostExecute(Integer code) {
 //                   Log.d("ConversationFragment", mDialog.getId() + ":" + input.toString());
-                   messagesAdapter.addToStart(message, true);
-                   List<Message> list = MessagesListProvider.getMessagesById(mDialog.getId());
-                   list.add(message);
-               }
-           }.execute();
-        else
+                    }
+                }.execute();
+            }
+        } else
             new LocalUDPDataSender.SendCommonDataAsync(this, input.toString(), mTo_user_ip){
                 @Override
                 protected void onPostExecute(Integer code) {
@@ -225,17 +231,17 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     }
 
     protected void loadMessages() {
-        new Handler().postDelayed(new Runnable() { //imitation of internet connection
-            @Override
-            public void run() {
+//        new Handler().postDelayed(new Runnable() { //imitation of internet connection
+//            @Override
+//            public void run() {
 //                ArrayList<Message> messages = MessagesFixtures.getMessages(lastLoadedDate);
 //                lastLoadedDate = messages.get(messages.size() - 1).getCreatedAt();
 //                if(!messages.isEmpty()){
 //                    Log.d("SubList", messages.size() + "");
 //                    messagesAdapter.addToEnd(messages.subList(0, messages.size() - 1), false);
 //                }
-            }
-        }, 1000);
+//            }
+//        }, 1000);
     }
 
     private MessagesListAdapter.Formatter<Message> getMessageStringFormatter() {

@@ -5,44 +5,80 @@ package com.obser.wecloud.bean;
  */
 
 public class ProtocolMessage {
-    private String fromUserName;
-    private String fromUserIp;
+//    private String fromUserName;
+//    private String fromUserIp;
     private String content;
     private String type;
-    private String fromUserPicture;
+    private String dialogId;
+    private boolean mode;
 
-    public String getFromUserPicture() {
-        return fromUserPicture;
+    public String getDialogId() {
+        return dialogId;
     }
 
-    public void setFromUserPicture(String fromUserPicture) {
-        this.fromUserPicture = fromUserPicture;
+    public void setDialogId(String dialogId) {
+        this.dialogId = dialogId;
+    }
+    //    private String fromUserPicture;
+//    private String toUserAccount;
+
+//    public String getFromUserPicture() {
+//        return fromUserPicture;
+//    }
+//
+//    public void setFromUserPicture(String fromUserPicture) {
+//        this.fromUserPicture = fromUserPicture;
+//    }
+//
+//    public String getToUserAccount() {
+//        return toUserAccount;
+//    }
+//
+//    public void setToUserAccount(String toUserAccount) {
+//        this.toUserAccount = toUserAccount;
+//    }
+    private User user;
+
+    public User getChatUser() {
+        return user;
     }
 
-    public ProtocolMessage(String fromUserName, String fromUserIp, String content, String type, String fromUserPicture) {
-        this.fromUserName = fromUserName;
-        this.fromUserIp = fromUserIp;
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public boolean getMode() {
+        return mode;
+    }
+
+    public void setMode(boolean mode) {
+        this.mode = mode;
+    }
+
+    public ProtocolMessage(User user, String dialogId, String content, String type, boolean mode) {
+        this.user = user;
         this.content = content;
         this.type = type;
-        this.fromUserPicture = fromUserPicture;
+        this.dialogId = dialogId;
+        this.mode = mode;
 
     }
 
-    public String getFromUserName() {
-        return fromUserName;
-    }
-
-    public void setFromUserName(String fromUserName) {
-        this.fromUserName = fromUserName;
-    }
-
-    public String getFromUserIp() {
-        return fromUserIp;
-    }
-
-    public void setFromUserIp(String fromUserIp) {
-        this.fromUserIp = fromUserIp;
-    }
+//    public String getFromUserName() {
+//        return fromUserName;
+//    }
+//
+//    public void setFromUserName(String fromUserName) {
+//        this.fromUserName = fromUserName;
+//    }
+//
+//    public String getFromUserIp() {
+//        return fromUserIp;
+//    }
+//
+//    public void setFromUserIp(String fromUserIp) {
+//        this.fromUserIp = fromUserIp;
+//    }
 
     public String getContent() {
         return content;

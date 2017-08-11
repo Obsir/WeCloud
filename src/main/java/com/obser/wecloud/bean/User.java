@@ -1,53 +1,167 @@
 package com.obser.wecloud.bean;
-
 import com.stfalcon.chatkit.commons.models.IUser;
 
-/*
- * Created by troy379 on 04.04.17.
+import java.io.Serializable;
+
+/**
+ * @class ChatUser
+ * @brief 系统实体类-用户类
+ *
+ * 包含用户的各种参数。
+ * @author 常星
+ * @date 2017年7月21日
  */
-public class User implements IUser {
 
-    private String id;
-    private String name;
-    private String avatar;
-    private boolean online;
-    private String ip;
+public class User implements Serializable, IUser {
+    private static final long serialVersionUID = 1947226543936059439L;
 
-
-
-    public User(String id, String name, String avatar, String ip, boolean online) {
+    public void setId(String id) {
         this.id = id;
-        this.name = name;
-        this.avatar = avatar;
-        this.online = online;
-        this.ip = ip;
-
     }
 
-    @Override
-    public String toString() {
-        return "{id:" + id + ", name:" + name + ", picture:" + avatar + ", ip:" + ip + "}";
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    private String username; //用户名
+    private String userpwd; //用户密码
+    private int userpower; //用户权限
+    private String realname; //用户真实姓名
+    private String ip; //用户当前ip
+    private String port; //用户当前接收信息端口
+    private int state; //用户当前上线状态
+    private String picture; //用户头像照片
+    private int team;   //用户所在组
+    private String id;
+
+    public User() {
+    }
+
+    public User(String username, String picture) {
+        this.username = username;
+        this.picture = picture;
+    }
+
+    public User(String username, String userpwd, int userpower, String realname, String ip, String port, int state, String picture, int team) {
+        this.username = username;
+        this.userpwd = userpwd;
+        this.userpower = userpower;
+        this.realname = realname;
+        this.ip = ip;
+        this.port = port;
+        this.state = state;
+        this.picture = picture;
+        this.team = team;
+    }
+
+    public User(String id, String username, String userpwd, int userpower, String realname, String ip, String port, int state, String picture) {
+        this.username = username;
+        this.userpwd = userpwd;
+        this.userpower = userpower;
+        this.realname = realname;
+        this.ip = ip;
+        this.port = port;
+        this.state = state;
+        this.picture = picture;
+        this.id = id;
+    }
+
+    /**
+     * @fn 用于填充用户对象数据或者获取用户对象数据
+     * @brief 用户访问箭扣
+     * @author 常星
+     * @date 2017年7月21日
+     * */
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUserpwd() {
+        return userpwd;
+    }
+
+    public void setUserpwd(String userpwd) {
+        this.userpwd = userpwd;
+    }
+
+    public String getRealname() {
+        return realname;
+    }
+
+    public void setRealname(String realname) {
+        this.realname = realname;
     }
 
     public String getIp() {
         return ip;
     }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
+    public int getUserpower() {
+        return userpower;
+    }
+
+    public void setUserpower(int userpower) {
+        this.userpower = userpower;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+    public int getTeam() {
+        return team;
+    }
+
+    public void setTeam(int team) {
+        this.team = team;
+    }
+
+    /**
+     * 实现IUser的方法
+     * @return
+     */
     @Override
     public String getId() {
         return id;
     }
 
     @Override
+    public String toString() {
+        return "{id:" + id + ", name:" + username + ", picture:" + picture + ", ip:" + ip + "}";
+    }
+
+    @Override
     public String getName() {
-        return name;
+        return username;
     }
 
     @Override
     public String getAvatar() {
-        return avatar;
-    }
-
-    public boolean isOnline() {
-        return online;
+        return picture;
     }
 }

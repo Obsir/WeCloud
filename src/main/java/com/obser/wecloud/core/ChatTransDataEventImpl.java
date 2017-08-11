@@ -2,6 +2,7 @@ package com.obser.wecloud.core;
 
 import android.util.Log;
 
+import com.obser.wecloud.bean.ChatUser;
 import com.obser.wecloud.bean.Dialog;
 import com.obser.wecloud.bean.Message;
 import com.obser.wecloud.bean.MessagesListProvider;
@@ -37,17 +38,21 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
     @Override
     public void onMessageReceive(String message) {
         ProtocolMessage protocolMessage = Protocol.unPackMessage(message);
-        User user = new User("1", protocolMessage.getFromUserName(), protocolMessage.getFromUserPicture(), protocolMessage.getFromUserIp(), true);
+        User user = protocolMessage.getChatUser();
+        user.setId("1");
         Log.d("Conversation", message);
         Message msg = new Message(String.valueOf(System.currentTimeMillis()), user, protocolMessage.getContent());
 //        msg.setImage(new Message.Image(avatarUrl));
-
-        String dialogId = protocolMessage.getFromUserName() + ":" + protocolMessage.getFromUserIp();
+        String dialogId;
+        if(!protocolMessage.getMode())
+            dialogId = protocolMessage.getDialogId();
+        else
+            dialogId = user.getUsername();
 
         List<Message> list = MessagesListProvider.getMessagesById(dialogId);
         list.add(msg);
 
-        onNewMessage(dialogId, msg);
+        onNewMessage(dialogId, msg, protocolMessage.getMode());
         if(messagesAdapter != null)
             messagesAdapter.addToStart(msg, true);
     }
@@ -58,15 +63,17 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
     }
 
 
-    public void onNewMessage(String dialogId, IMessage message) {
+    public void onNewMessage(String dialogId, IMessage message, boolean mode) {
         if (!dialogsListAdapter.updateDialogWithMessage(dialogId, message)) {
             //Dialog with this ID doesn't exist, so you can create new Dialog or reload all dialogs list
             Log.d("ConversationDialogId", dialogId);
-            String name = message.getUser().getName();
-            String photo = message.getUser().getAvatar();
+            User user = (User) message.getUser();
+            String name = user.getName();
+            String photo = user.getAvatar();
             ArrayList<User> users = new ArrayList<>();
             users.add((User) message.getUser());
-            dialogsListAdapter.addItem(new Dialog(dialogId, name, photo, users, (Message) message, 1));
+            Log.d("ChatTransDataEventImpl", dialogId);
+            dialogsListAdapter.addItem(new Dialog(dialogId, name, photo, users, (Message) message, 1, mode));
         }
     }
 }

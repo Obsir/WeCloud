@@ -115,7 +115,7 @@
     <string name="group">群组</string>
     <string name="public_service">公众号</string>
     <string name="chatroom">聊天室</string>
-    <string name="groups">群聊</string>
+    <string name="GROUPS">群聊</string>
     <string name="chatroom1">聊天室 I</string>
     <string name="add_success">加入成功</string>
     <string name="not_group_members">非群组成员不能查看群组详情</string>

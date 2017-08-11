@@ -8,6 +8,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
+        multiDexEnabled true
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -30,5 +31,5 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    compile files('libs/gson-2.2.1.jar')
+    compile 'com.google.code.gson:gson:2.8.1'
 }

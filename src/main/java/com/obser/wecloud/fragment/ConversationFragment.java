@@ -1,7 +1,6 @@
 package com.obser.wecloud.fragment;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -9,23 +8,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.obser.wecloud.R;
-import com.obser.wecloud.User;
-import com.obser.wecloud.activity.MainActivity;
+import com.obser.wecloud.bean.User;
 import com.obser.wecloud.activity.MessageActivity;
+import com.obser.wecloud.app.WeCloudApplication;
 import com.obser.wecloud.bean.Dialog;
 import com.obser.wecloud.bean.Message;
-import com.obser.wecloud.bean.MessageForUser;
+import com.obser.wecloud.bean.UserListInfo;
 import com.obser.wecloud.core.ChatTransDataEventImpl;
 import com.obser.wecloud.core.ClientCoreSDK;
-import com.obser.wecloud.fixtures.Avatars;
-import com.obser.wecloud.fixtures.DialogsFixtures;
 import com.obser.wecloud.utils.NToast;
 import com.obser.wecloud.utils.NetUtils;
-import com.obser.wecloud.utils.UDPUtils;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.commons.models.IMessage;
@@ -53,10 +48,10 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
     private DialogsListAdapter<Dialog> dialogsListAdapter;
     //自定义
     private List<User> userList;
-    private List<com.obser.wecloud.bean.User> userChatList;
     private Activity mContext;
-    private String userAccount;
-    private com.obser.wecloud.bean.User mUser;
+    private Gson gson;
+    private List<UserListInfo.BodyBean.GroupsBean> groups;
+    private User mUser;
 
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -97,11 +92,14 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
 
     private void initData() {
         mContext = this.getActivity();
-        userChatList = new ArrayList<>();
-        userAccount = getActivity().getIntent().getStringExtra("account");
-        Log.d("Conversation", userAccount);
+        WeCloudApplication application = (WeCloudApplication) getActivity().getApplication();
+        mUser = application.getUser();
+        gson = new Gson();
+//        userAccount = getActivity().getIntent().getStringExtra("account");
+//        Log.d("Conversation", userAccount);
 //        Avatars.init(this.getContext());
-        NetUtils.doGet(NetUtils.FIND_ALL_USER, new Callback() {
+        // http://192.168.1.103:8083/findAllUser/username
+        NetUtils.doGet(NetUtils.FIND_ALL_USER + "/" + mUser.getUsername(), new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         mContext.runOnUiThread(new Runnable() {
@@ -113,26 +111,28 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
                     }
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        String userListJson = response.body().string();
+                        final String userListJson = response.body().string();
                         Log.d("正确得到所有用户", userListJson);
-                        Gson gson = new Gson();
-                        MessageForUser messageForUser = gson.fromJson(userListJson, MessageForUser.class);
-                        userList = messageForUser.getBody().getONLINEUSER();
-                        userList.addAll(messageForUser.getBody().getOFFLINEUSER());
-                        for(User user : userList){
-                            if(user.getUsername().equals(userAccount)){
-                                mUser = new com.obser.wecloud.bean.User("0", user.getRealname(), user.getPicture(), UDPUtils.getIPAddress(mContext), user.getState() == 1);
-                            }
-                            Log.d("Conversation", user.getRealname() + ":" + user.getUsername());
-                            com.obser.wecloud.bean.User newUser = new com.obser.wecloud.bean.User("1", user.getRealname(), "nnnn", user.getIp(), user.getState() == 1);
-                            userChatList.add(newUser);
-                        }
+                        UserListInfo userListInfo = gson.fromJson(userListJson, UserListInfo.class);
+                        userList = userListInfo.getBody().getONLINEUSER();
+                        userList.addAll(userListInfo.getBody().getOFFLINEUSER());
+                        userList.remove(mUser);
+                        groups = userListInfo.getBody().getGROUPS();
                         mContext.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                for(com.obser.wecloud.bean.User user : userChatList){
+                                for(User user : userList){
+                                    if(user.getUsername().equals(mUser.getUsername()))
+                                        continue;
                                     Log.d("ConversationFragment", user.getName() + ":" + user.getIp());
-                                    onNewMessage(user.getName() + ":" + user.getIp(), new Message(String.valueOf(System.currentTimeMillis()), user, ""), 0);
+                                    onNewMessage(user.getUsername(), new Message(String.valueOf(System.currentTimeMillis()), user, ""), 0);
+                                }
+                                for(UserListInfo.BodyBean.GroupsBean groupsBean : groups){
+                                    ArrayList<User> users = (ArrayList<User>) groupsBean.getGROUPSUSER();
+                                    UserListInfo.BodyBean.GroupsBean.GroupsInfoBean groupsInfo = groupsBean.getGROUPSINFO();
+                                    Message message = new Message(String.valueOf(System.currentTimeMillis()), mUser, "");
+                                    Dialog dialog = new Dialog(String.valueOf(groupsInfo.getGroupsId()), groupsInfo.getGroupsName(), groupsInfo.getGroupsPicture(), users, message, 0, false);
+                                    onNewMessage(dialog, message);
                                 }
                             }
                         });
@@ -141,15 +141,23 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
         );
     }
 
+    public void onNewMessage(Dialog dialog, IMessage message){
+        if (!dialogsListAdapter.updateDialogWithMessage(dialog.getId(), message)) {
+            //Dialog with this ID doesn't exist, so you can create new Dialog or reload all dialogs list
+            dialogsListAdapter.addItem(dialog);
+        }
+    }
 
     public void onNewMessage(String dialogId, IMessage message, int unRead) {
         if (!dialogsListAdapter.updateDialogWithMessage(dialogId, message)) {
             //Dialog with this ID doesn't exist, so you can create new Dialog or reload all dialogs list
-            String name = message.getUser().getName();
-            String photo = message.getUser().getAvatar();
-            ArrayList<com.obser.wecloud.bean.User> users = new ArrayList<>();
-            users.add((com.obser.wecloud.bean.User) message.getUser());
-            dialogsListAdapter.addItem(new Dialog(dialogId, name, photo, users, (Message) message, unRead));
+            User user = (User) message.getUser();
+            String name = user.getRealname();
+            String photo = user.getAvatar();
+            ArrayList<User> users = new ArrayList<>();
+            users.add((User) message.getUser());
+            Log.d("ConversationFragment", dialogId);
+            dialogsListAdapter.addItem(new Dialog(dialogId, name, photo, users, (Message) message, unRead, true));
         }
     }
 
@@ -160,7 +168,7 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
 
     @Override
     public void onDialogClick(Dialog dialog) {
-        MessageActivity.open(this.getActivity(), dialog, mUser, dialogsListAdapter);
+        MessageActivity.open(this.getActivity(), dialog, dialogsListAdapter);
 //        this.getActivity().overridePendingTransition(R.anim.fade_in,R.anim.fade_out);
     }
 

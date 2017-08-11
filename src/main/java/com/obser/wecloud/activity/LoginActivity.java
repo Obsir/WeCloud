@@ -2,9 +2,7 @@ package com.obser.wecloud.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -17,31 +15,25 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.obser.wecloud.R;
-import com.obser.wecloud.User;
+import com.obser.wecloud.app.WeCloudApplication;
+import com.obser.wecloud.bean.LoginInfo;
+import com.obser.wecloud.bean.User;
 import com.obser.wecloud.utils.NToast;
 import com.obser.wecloud.utils.NetUtils;
 import com.obser.wecloud.utils.UDPUtils;
 import com.obser.wecloud.view.ClearWriteEditText;
 import com.obser.wecloud.view.LoadDialog;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.OkHttpClient;
 import okhttp3.Response;
-import okhttp3.internal.tls.OkHostnameVerifier;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -52,6 +44,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private ClearWriteEditText mAccountEdit, mPasswordEdit;
     private String accountString;
     private String passwordString;
+    private Gson gson;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initView() {
+        gson = new Gson();
         mContext = this;
         mAccountEdit = (ClearWriteEditText) findViewById(R.id.de_login_account);
         mPasswordEdit = (ClearWriteEditText) findViewById(R.id.de_login_password);
@@ -144,8 +138,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         user.setUserpwd(passwordString);
         user.setIp(UDPUtils.getIPAddress(this));
         user.setPort("7901");
-        Log.e("User", user.getIp().toString());
-        Log.e("User", user.toString());
+        Log.e("ChatUser", user.getIp().toString());
+        Log.e("ChatUser", user.toString());
         Map<String, String> params = new HashMap<>();
         params.put("username", user.getUsername());
         params.put("userpwd", user.getUserpwd());
@@ -167,11 +161,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             public void onResponse(Call call, Response response) throws IOException {
 //                Log.d(TAG, response.body().string() + "");
                 final String str = response.body().string();
+                final LoginInfo loginInfo = gson.fromJson(str, LoginInfo.class);
+                Log.d(TAG, loginInfo.getHead());
+                Log.d(TAG, loginInfo.getBody().getUSER() + "");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(str.equals("SUCCESS")){
-                            goToMain();
+                        if(loginInfo.getHead().equals("SUCCESS")){
+                            goToMain(loginInfo);
                         } else {
                             login_failure();
                         }
@@ -233,7 +230,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onDestroy();
     }
 
-    private void goToMain() {
+
+
+    private void goToMain(LoginInfo loginInfo) {
+        WeCloudApplication application = (WeCloudApplication) getApplication();
+        User user = loginInfo.getBody().getUSER();
+        user.setId("0");
+        application.setUser(user);
 //        editor.putString("loginToken", loginToken);
 //        editor.putString(SealConst.SEALTALK_LOGING_PHONE, accountString);
 //        editor.putString(SealConst.SEALTALK_LOGING_PASSWORD, passwordString);
@@ -241,7 +244,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         LoadDialog.dismiss(mContext);
         NToast.shortToast(mContext, R.string.login_success);
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        intent.putExtra("account", accountString);
+//        intent.putExtra("account", accountString);
         startActivity(intent);
         finish();
     }

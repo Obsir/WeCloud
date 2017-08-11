@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.MessageContentType;
 
-import java.util.Comparator;
 import java.util.Date;
 
 /*

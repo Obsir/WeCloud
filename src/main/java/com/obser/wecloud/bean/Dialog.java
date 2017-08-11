@@ -14,11 +14,20 @@ public class Dialog implements IDialog<Message> {
     private String dialogName;
     private ArrayList<User> users;
     private Message lastMessage;
+    private boolean mode;//true表示私聊，false表示群聊
 
     private int unreadCount;
 
+    public boolean getMode() {
+        return mode;
+    }
+
+    public void setMode(boolean mode) {
+        this.mode = mode;
+    }
+
     public Dialog(String id, String name, String photo,
-                  ArrayList<User> users, Message lastMessage, int unreadCount) {
+                  ArrayList<User> users, Message lastMessage, int unreadCount, boolean mode) {
 
         this.id = id;
         this.dialogName = name;
@@ -26,6 +35,8 @@ public class Dialog implements IDialog<Message> {
         this.users = users;
         this.lastMessage = lastMessage;
         this.unreadCount = unreadCount;
+        this.mode = mode;
+
     }
 
 

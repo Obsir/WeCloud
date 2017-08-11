@@ -2,7 +2,7 @@ package com.obser.wecloud.bean;
 
 import java.io.Serializable;
 import java.util.List;
-import com.obser.wecloud.User;
+
 /**
  * Created by Administrator on 2017/8/4.
  */
