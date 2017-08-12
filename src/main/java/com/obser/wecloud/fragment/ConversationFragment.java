@@ -11,6 +11,8 @@ import android.widget.ImageView;
 
 import com.google.gson.Gson;
 import com.obser.wecloud.R;
+import com.obser.wecloud.bean.DialogUnReadProvider;
+import com.obser.wecloud.bean.MessagesListProvider;
 import com.obser.wecloud.bean.User;
 import com.obser.wecloud.activity.MessageActivity;
 import com.obser.wecloud.app.WeCloudApplication;
@@ -21,6 +23,8 @@ import com.obser.wecloud.core.ChatTransDataEventImpl;
 import com.obser.wecloud.core.ClientCoreSDK;
 import com.obser.wecloud.utils.NToast;
 import com.obser.wecloud.utils.NetUtils;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.commons.models.IMessage;
@@ -52,13 +56,15 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
     private Gson gson;
     private List<UserListInfo.BodyBean.GroupsBean> groups;
     private User mUser;
-
+    private RefreshLayout refreshLayout;
+    private List<Dialog> dialogList;
+    private Date loginDate;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_conversation, container, false);
         initView(view);
-        initData();
         initAdapter();
+        initData();
         initClientSDK();
 //        updateUI();
 //        refreshUIListener();
@@ -74,6 +80,12 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
 
 
     private void initAdapter() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh(RefreshLayout refreshlayout) {
+                refreshData();
+            }
+        });
         //If you using another library - write here your way to load image
         dialogsListAdapter = new DialogsListAdapter<>(R.layout.item_dialog_fragment, new ImageLoader() {
             @Override
@@ -92,13 +104,20 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
 
     private void initData() {
         mContext = this.getActivity();
+        dialogList = new ArrayList<>();
+        userList = new ArrayList<>();
         WeCloudApplication application = (WeCloudApplication) getActivity().getApplication();
         mUser = application.getUser();
+        loginDate = new Date();
         gson = new Gson();
-//        userAccount = getActivity().getIntent().getStringExtra("account");
-//        Log.d("Conversation", userAccount);
-//        Avatars.init(this.getContext());
-        // http://192.168.1.103:8083/findAllUser/username
+        refreshData();
+    }
+
+
+    /**
+     * 向服务器请求数据
+     */
+    private void refreshData(){
         NetUtils.doGet(NetUtils.FIND_ALL_USER + "/" + mUser.getUsername(), new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
@@ -106,6 +125,7 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
                             @Override
                             public void run() {
                                 NToast.shortToast(mContext, "刷新失败，请检查网络！");
+                                refreshLayout.finishRefresh(false);
                             }
                         });
                     }
@@ -114,26 +134,48 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
                         final String userListJson = response.body().string();
                         Log.d("正确得到所有用户", userListJson);
                         UserListInfo userListInfo = gson.fromJson(userListJson, UserListInfo.class);
-                        userList = userListInfo.getBody().getONLINEUSER();
+                        DialogUnReadProvider.setUnReadByList(dialogList);
+                        /* 清空旧数据 start */
+                        userList.clear();
+                        dialogList.clear();
+                        /* 清空旧数据 end */
+                        userList.addAll(userListInfo.getBody().getONLINEUSER());
                         userList.addAll(userListInfo.getBody().getOFFLINEUSER());
                         userList.remove(mUser);
                         groups = userListInfo.getBody().getGROUPS();
                         mContext.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                dialogsListAdapter.clear();
+                                //刷新私聊Dialog
                                 for(User user : userList){
                                     if(user.getUsername().equals(mUser.getUsername()))
                                         continue;
                                     Log.d("ConversationFragment", user.getName() + ":" + user.getIp());
-                                    onNewMessage(user.getUsername(), new Message(String.valueOf(System.currentTimeMillis()), user, ""), 0);
+                                    ArrayList<User> users = new ArrayList<>();
+                                    users.add(user);
+                                    Message message = getDialogLastMessage(user);
+                                    Dialog dialog = new Dialog(user.getUsername(), user.getRealname(), user.getPicture(), users, message, 0, true);
+                                    dialogList.add(dialog);
+//                                    onNewDialog(user.getUsername(), new Message(String.valueOf(System.currentTimeMillis()), user, ""), 0);
                                 }
+                                //刷新群聊Dialog
                                 for(UserListInfo.BodyBean.GroupsBean groupsBean : groups){
                                     ArrayList<User> users = (ArrayList<User>) groupsBean.getGROUPSUSER();
                                     UserListInfo.BodyBean.GroupsBean.GroupsInfoBean groupsInfo = groupsBean.getGROUPSINFO();
-                                    Message message = new Message(String.valueOf(System.currentTimeMillis()), mUser, "");
+//                                    Message message = new Message(String.valueOf(System.currentTimeMillis()), mUser, "");
+                                    Message message = getDialogLastMessage(String.valueOf(groupsInfo.getGroupsId()));
                                     Dialog dialog = new Dialog(String.valueOf(groupsInfo.getGroupsId()), groupsInfo.getGroupsName(), groupsInfo.getGroupsPicture(), users, message, 0, false);
-                                    onNewMessage(dialog, message);
+                                    dialogList.add(dialog);
+//                                    onNewDialog(dialog, message);
                                 }
+                                //刷新Dialog列表
+                                for(Dialog dialog : dialogList)
+                                    dialog.setUnreadCount(DialogUnReadProvider.getUnReadById(dialog.getId()));
+                                dialogsListAdapter.sortByLastMessageDate();
+                                dialogsListAdapter.setItems(dialogList);
+                                ClientCoreSDK.getInstance().getChatTransDataEvent().setDialogList(dialogList);
+                                refreshLayout.finishRefresh(true);
                             }
                         });
                     }
@@ -141,14 +183,59 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
         );
     }
 
-    public void onNewMessage(Dialog dialog, IMessage message){
+
+    /**
+     * 更新私聊最后一条消息
+     * @param user
+     * @return Message
+     */
+    private Message getDialogLastMessage(User user){
+        List<Message> messages = MessagesListProvider.getMessagesById(user.getUsername());
+        Message message = null;
+        if(!messages.isEmpty())
+            message = messages.get(0);
+        if(message == null){
+            message = new Message(String.valueOf(System.currentTimeMillis()), user, "", loginDate);
+        }
+        return message;
+    }
+
+    /**
+     * 更新群聊最后一条消息
+     * @param dialogId
+     * @return Message
+     */
+    private Message getDialogLastMessage(String dialogId){
+        List<Message> messages = MessagesListProvider.getMessagesById(dialogId);
+        Message message = null;
+        if(!messages.isEmpty())
+            message = messages.get(0);
+        if(message == null)
+            message = new Message(String.valueOf(System.currentTimeMillis()), mUser, "", loginDate);
+        return message;
+    }
+
+
+
+    /**
+     * 初始化私聊（已废弃）
+     * @param dialog
+     * @param message
+     */
+    public void onNewDialog(Dialog dialog, IMessage message){
         if (!dialogsListAdapter.updateDialogWithMessage(dialog.getId(), message)) {
             //Dialog with this ID doesn't exist, so you can create new Dialog or reload all dialogs list
             dialogsListAdapter.addItem(dialog);
         }
     }
 
-    public void onNewMessage(String dialogId, IMessage message, int unRead) {
+    /**
+     * 初始化群组（已废弃）
+     * @param dialogId
+     * @param message
+     * @param unRead
+     */
+    public void onNewDialog(String dialogId, IMessage message, int unRead) {
         if (!dialogsListAdapter.updateDialogWithMessage(dialogId, message)) {
             //Dialog with this ID doesn't exist, so you can create new Dialog or reload all dialogs list
             User user = (User) message.getUser();
@@ -164,6 +251,7 @@ public class ConversationFragment extends Fragment implements DateFormatter.Form
 
     private void initView(View view) {
         mDialogsList = (DialogsList) view.findViewById(R.id.dialogsList);
+        refreshLayout = (RefreshLayout)view.findViewById(R.id.refreshLayout);
     }
 
     @Override

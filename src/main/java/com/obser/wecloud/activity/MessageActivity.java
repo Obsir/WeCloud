@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.obser.wecloud.R;
@@ -58,6 +60,10 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     private static Dialog mDialog;
     private static String mTo_user_ip;
     private static DialogsListAdapter<Dialog> mDialogsListAdapter;
+    private TextView tv_title;
+    private Button btn_group;
+    private Button btn_person;
+
     /* 自定义 end */
     public static void open(Context context, String to_user_ip){
         context.startActivity(new Intent(context, MessageActivity.class));
@@ -75,10 +81,10 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_styled_messages);
+        initView();
         initData();
+        initListener();
         initBar();
-        imageLoader = mDialogsListAdapter.getImageLoader();
-        messagesList = (MessagesList) findViewById(R.id.messagesList);
         initAdapter();
 
         input = (MessageInput) findViewById(R.id.input);
@@ -86,9 +92,46 @@ public class MessageActivity extends AppCompatActivity implements MessageInput.I
         input.setAttachmentsListener(this);
     }
 
+    private void initListener() {
+        if(mDialog.getMode()){
+            btn_group.setVisibility(View.GONE);
+            btn_person.setVisibility(View.VISIBLE);
+        } else {
+            btn_group.setVisibility(View.VISIBLE);
+            btn_person.setVisibility(View.GONE);
+        }
+        btn_group.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MessageActivity.this, GroupDetailActivity.class);
+                intent.putExtra("users", mDialog.getUsers());
+                startActivity(intent);
+            }
+        });
+        btn_person.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MessageActivity.this, PrivateChatDetailActivity.class);
+                intent.putExtra("users", mDialog.getUsers());
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void initView() {
+        tv_title = (TextView) findViewById(R.id.tv_title);
+        messagesList = (MessagesList) findViewById(R.id.messagesList);
+        btn_group = (Button) findViewById(R.id.btn_group);
+        btn_person = (Button) findViewById(R.id.btn_person);
+    }
+
     private void initData() {
         WeCloudApplication application = (WeCloudApplication) getApplication();
         mUser = application.getUser();
+        imageLoader = mDialogsListAdapter.getImageLoader();
+        mDialog.setUnreadCount(0);
+        mDialogsListAdapter.updateItemById(mDialog);
+        tv_title.setText(mDialog.getDialogName());
 //         mChatUser = new ChatUser("0", UDPUtils.getIPAddress(this), "nnn", UDPUtils.getIPAddress(this), true);
 //        messages = ClientCoreSDK.getInstance().getChatTransDataEvent().getMessages();
     }

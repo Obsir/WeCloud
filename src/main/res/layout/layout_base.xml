@@ -44,6 +44,32 @@
             android:textSize="18sp"
              />
 
+        <Button
+            android:id="@+id/btn_person"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="15dp"
+            android:background="@null"
+            android:maxLines="1"
+            android:visibility="gone"
+            android:drawableLeft="@drawable/icon1_menu"
+            android:textColor="@drawable/selector_btn_top" />
+
+
+        <Button
+            android:id="@+id/btn_group"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="15dp"
+            android:background="@null"
+            android:maxLines="1"
+            android:visibility="gone"
+            android:drawableLeft="@drawable/icon2_menu"
+            android:textColor="@drawable/selector_btn_top" />
 
         <Button
             android:id="@+id/btn_delete"
@@ -53,6 +79,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="15dp"
             android:background="@null"
+            android:visibility="gone"
             android:maxLines="1"
             android:drawableLeft="@drawable/ic_action_delete"
             android:textColor="@drawable/selector_btn_top" />
@@ -64,6 +91,7 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="15dp"
+            android:visibility="gone"
             android:background="@null"
             android:drawableLeft="@drawable/ic_action_copy"
             android:maxLines="1"

@@ -6,6 +6,7 @@ import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Obser on 2017/8/7.
@@ -17,4 +18,6 @@ public interface ChatTransDataEvent {
     //自定义
     void setMessagesAdapter(MessagesListAdapter<Message> messagesAdapter);
     void setDialogsListAdapter(DialogsListAdapter<Dialog> dialogsListAdapter);
+
+    void setDialogList(List<Dialog> dialogList);
 }

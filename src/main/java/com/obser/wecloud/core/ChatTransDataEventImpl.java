@@ -24,6 +24,7 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
 
     private  DialogsListAdapter<Dialog> dialogsListAdapter;
     private MessagesListAdapter<Message> messagesAdapter;
+    private List<Dialog> dialogList;
     public void setMessagesAdapter(MessagesListAdapter<Message> messagesAdapter){
         this.messagesAdapter = messagesAdapter;
     }
@@ -33,6 +34,11 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
 
     public void setDialogsListAdapter(DialogsListAdapter<Dialog> dialogsListAdapter) {
         this.dialogsListAdapter = dialogsListAdapter;
+    }
+
+    @Override
+    public void setDialogList(List<Dialog> dialogList) {
+        this.dialogList = dialogList;
     }
 
     @Override
@@ -74,6 +80,11 @@ public class ChatTransDataEventImpl implements ChatTransDataEvent {
             users.add((User) message.getUser());
             Log.d("ChatTransDataEventImpl", dialogId);
             dialogsListAdapter.addItem(new Dialog(dialogId, name, photo, users, (Message) message, 1, mode));
+        } else {
+            for(Dialog dialog : dialogList){
+                if(dialog.getId().equals(dialogId))
+                    dialog.setUnreadCount(dialog.getUnreadCount() + 1);
+            }
         }
     }
 }
